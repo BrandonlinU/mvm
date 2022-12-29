@@ -1,0 +1,177 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container">
+        {% for type in ['success', 'warning', 'danger'] %}
+            {% for message in app.flashes(type) %}
+            <div class="alert alert-{{ type }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            </div>
+            {% endfor %}
+        {% endfor %}
+
+        <h1>Minecraft Version Management (MVM)</h1>
+
+        <h2>Versión actual: <span class="text-primary">{{ actualVersion ?? 'Desconocida' }}</span></h2>
+        <h3>Versiones instaladas:</h3>
+        <ul>
+            {% for version in versions %}
+            <li>
+                <span class="me-2">{{ version }}</span>
+
+                <form class="d-inline" method="post" action="{{ path('app_version_activate', {version}) }}">
+                    <input name="token" type="hidden" value="{{ csrf_token('activate-' ~ version) }}"/>
+                    <button class="btn btn-success" type="submit">Activar</button>
+                </form>
+
+                <form class="d-inline" method="post" action="{{ path('app_version_delete', {version}) }}">
+                    <input name="token" type="hidden" value="{{ csrf_token('delete-' ~ version) }}"/>
+                    <button class="btn btn-danger" type="submit">Eliminar</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <h2>Mundo actual: <span class="text-primary">{{ actualWorld ?? 'Desconocido' }}</span></h2>
+        <h3>Mundos instalados</h3>
+        <ul>
+            {% for world in worlds %}
+            <li>
+                <span class="me-2">{{ world.name }}</span>
+
+                <form class="d-inline" method="post" action="{#{ path('app_home_activateversion', {'world': world.name}) }#}">
+                    <input name="token" type="hidden" value="{#{ csrf_token('activate-' ~ version) }#}"/>
+                    <button class="btn btn-success" type="submit">Activar</button>
+                </form>
+
+                <form class="d-inline" method="post" action="{#{ path('app_home_deleteversion', {'world': world.name}) }#}">
+                    <input name="token" type="hidden" value="{#{ csrf_token('delete-' ~ version) }#}"/>
+                    <button class="btn btn-danger" type="submit">Eliminar</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <h2>Packs de comportamiento</h2>
+        <div class="row mb-2">
+        {% for behaviorPack in behaviorPacks %}
+            {% set exists = world.behaviorPack(behaviorPack) %}
+            <div class="col col-sm-6 col-md-4 col-lg-3">
+                <div class="card h-100 {% if exists %}bg-primary text-bg-primary{% endif %}">
+                    <div class="card-body">
+                        <img class="card-img-top" src="{{ path('app_behaviorpack_geticon', {version: actualVersion, uuid: behaviorPack.uuid}) }}" alt="{{ behaviorPack.name }}"/>
+                        <h3 class="card-title">{{ behaviorPack.name }}</h3>
+                        <div class="card-text">
+                            <p>Descripción: {{ behaviorPack.description }}</p>
+                            <p>Versión: {{ behaviorPack.version|join('.') }}</p>
+                        </div>
+
+                        {% if actualWorld is not null %}
+                            {% if exists %}
+                            <form class="d-inline" method="post" action="{{ path('app_world_deactivatebehaviorpack', {version: actualVersion, world: actualWorld, uuid: behaviorPack.uuid}) }}">
+                                <input name="token" type="hidden" value="{{ csrf_token('deactivate-behavior-' ~ actualVersion ~ '-' ~ actualWorld ~ '-' ~ behaviorPack.uuid) }}"/>
+                                <button class="btn btn-warning" type="submit">Desactivar</button>
+                            </form>
+                            {% else %}
+                            <form class="d-inline" method="post" action="{{ path('app_world_activatebehaviorpack', {version: actualVersion, world: actualWorld, uuid: behaviorPack.uuid}) }}">
+                                <input name="token" type="hidden" value="{{ csrf_token('activate-behavior-' ~ actualVersion ~ '-' ~ actualWorld ~ '-' ~ behaviorPack.uuid) }}"/>
+                                <button class="btn btn-success" type="submit">Activar</button>
+                            </form>
+                            {% endif %}
+                        {% endif %}
+
+                        <form class="d-inline" method="post" action="{{ path('app_behaviorpack_delete', {version: actualVersion, uuid: behaviorPack.uuid}) }}">
+                            <input name="token" type="hidden" value="{{ csrf_token('delete-behavior-' ~ actualVersion ~ '-' ~ behaviorPack.uuid) }}"/>
+                            <button class="btn btn-danger" type="submit">Eliminar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+
+        <form method="post" enctype="multipart/form-data" action="{{ path('app_behaviorpack_install', {version: actualVersion}) }}">
+            <h3>Instalar paquetes de comportamiento</h3>
+
+            <div class="row mb-2">
+                <label class="col-md-3 col-form-label" for="behavior-pack">Archivo</label>
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <input id="behavior-pack" class="form-control" name="file" type="file" required/>
+                        <button class="btn btn-success" type="submit">Instalar</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <h2>Packs de recursos</h2>
+        <div class="row mb-2">
+        {% for resourcePack in resourcePacks %}
+            {% set exists = world.resourcePack(resourcePack) %}
+            <div class="col col-sm-6 col-md-4 col-lg-3">
+                <div class="card h-100 {% if exists %}bg-primary text-bg-primary{% endif %}">
+                    <div class="card-body">
+                        <img class="card-img-top" src="{{ path('app_resourcepack_geticon', {version: actualVersion, uuid: resourcePack.uuid}) }}" alt="{{ resourcePack.name }}"/>
+                        <h3 class="card-title">{{ resourcePack.name }}</h3>
+                        <div class="card-text">
+                            <p>Descripción: {{ resourcePack.description }}</p>
+                            <p>Versión: {{ resourcePack.version|join('.') }}</p>
+                        </div>
+
+                        {% if exists %}
+                        <form class="d-inline" method="post" action="{{ path('app_world_deactivateresourcepack', {version: actualVersion, world: actualWorld, uuid: resourcePack.uuid}) }}">
+                            <input name="token" type="hidden" value="{{ csrf_token('deactivate-resource-' ~ actualVersion ~ '-' ~ actualWorld ~ '-' ~ resourcePack.uuid) }}"/>
+                            <button class="btn btn-warning" type="submit">Desactivar</button>
+                        </form>
+                        {% else %}
+                        <form class="d-inline" method="post" action="{{ path('app_world_activateresourcepack', {version: actualVersion, world: actualWorld, uuid: resourcePack.uuid}) }}">
+                            <input name="token" type="hidden" value="{{ csrf_token('activate-resource-' ~ actualVersion ~ '-' ~ actualWorld ~ '-' ~ resourcePack.uuid) }}"/>
+                            <button class="btn btn-success" type="submit">Activar</button>
+                        </form>
+                        {% endif %}
+
+                        <form class="d-inline" method="post" action="{{ path('app_resourcepack_delete', {version: actualVersion, uuid: resourcePack.uuid}) }}">
+                            <input name="token" type="hidden" value="{{ csrf_token('delete-resource-' ~ actualVersion ~ '-' ~ resourcePack.uuid) }}"/>
+                            <button class="btn btn-danger" type="submit">Eliminar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+
+        <form method="post" enctype="multipart/form-data" action="{{ path('app_resourcepack_install', {version: actualVersion}) }}">
+            <h3>Instalar paquetes de recursos</h3>
+
+            <div class="row mb-2">
+                <label class="col-md-3 col-form-label" for="resource-pack">Archivo</label>
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <input id="resource-pack" class="form-control" name="file" type="file" required/>
+                        <button class="btn btn-success" type="submit">Instalar</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <form action="{{ path('app_version_download') }}" method="post">
+            <h2>Descargar versiones</h2>
+
+            <div class="row mb-2">
+                <label class="col-md-3 col-form-label" for="version">Versión</label>
+                <div class="col-md-9">
+                    <input id="version" class="form-control" name="version" type="text" required/>
+                </div>
+            </div>
+            <div class="mb-2">
+                <div class="form-check form-check-inline">
+                    <input id="force" class="form-check-input" name="force" type="checkbox" value="1">
+                    <label class="form-check-label" for="force">¿Forzar actualización?</label>
+                </div>
+            </div>
+
+            <button class="btn btn-success" type="submit">Actualizar</button>
+        </form>
+    </div>
+{% endblock %}
