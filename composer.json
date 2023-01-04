@@ -10,6 +10,7 @@
         "ext-zip": "*",
         "doctrine/collections": "^2.1",
         "hpeccatte/properties-parser": "^1.0",
+        "symfony/apache-pack": "^1.0",
         "symfony/asset": "6.2.*",
         "symfony/dotenv": "6.2.*",
         "symfony/filesystem": "6.2.*",
