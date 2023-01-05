@@ -58,12 +58,12 @@
         {% for behaviorPack in behaviorPacks %}
             {% set exists = world.behaviorPack(behaviorPack) %}
             <div class="col col-sm-6 col-md-4 col-lg-3">
-                <div class="card h-100 {% if exists %}bg-primary text-bg-primary{% endif %}">
+                <div class="card h-100 {% if exists %}border-success{% endif %}">
                     <div class="card-body">
                         <img class="card-img-top" src="{{ path('app_behaviorpack_geticon', {version: actualVersion, uuid: behaviorPack.uuid}) }}" alt="{{ behaviorPack.name }}"/>
-                        <h3 class="card-title">{{ behaviorPack.name }}</h3>
+                        <h3 class="card-title">{{ behaviorPack.name|minecraft_format }}</h3>
                         <div class="card-text">
-                            <p>Descripción: {{ behaviorPack.description }}</p>
+                            <p>Descripción: {{ behaviorPack.description|minecraft_format }}</p>
                             <p>Versión: {{ behaviorPack.version|join('.') }}</p>
                         </div>
 
@@ -112,12 +112,12 @@
         {% for resourcePack in resourcePacks %}
             {% set exists = world.resourcePack(resourcePack) %}
             <div class="col col-sm-6 col-md-4 col-lg-3">
-                <div class="card h-100 {% if exists %}bg-primary text-bg-primary{% endif %}">
+                <div class="card h-100 {% if exists %}border-success{% endif %}">
                     <div class="card-body">
                         <img class="card-img-top" src="{{ path('app_resourcepack_geticon', {version: actualVersion, uuid: resourcePack.uuid}) }}" alt="{{ resourcePack.name }}"/>
-                        <h3 class="card-title">{{ resourcePack.name }}</h3>
+                        <h3 class="card-title">{{ resourcePack.name|minecraft_format }}</h3>
                         <div class="card-text">
-                            <p>Descripción: {{ resourcePack.description }}</p>
+                            <p>Descripción: {{ resourcePack.description|minecraft_format }}</p>
                             <p>Versión: {{ resourcePack.version|join('.') }}</p>
                         </div>
 
