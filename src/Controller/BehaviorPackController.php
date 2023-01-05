@@ -33,7 +33,7 @@ class BehaviorPackController extends AbstractController
         /** @var UploadedFile $behaviorPack */
         $behaviorPack = $request->files->get('file');
 
-        if (in_array($behaviorPack->getClientOriginalExtension(), ['zip', 'mcpack'])) {
+        if (!in_array($behaviorPack->getClientOriginalExtension(), ['zip', 'mcpack'])) {
             $this->addFlash('danger', 'Solo se permiten archivos .zip o .mcpack');
 
             return $this->redirectToRoute('app_home_index');
