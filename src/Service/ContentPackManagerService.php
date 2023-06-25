@@ -38,12 +38,7 @@ abstract class ContentPackManagerService
                 throw new ContentPackCorruptedException(sprintf('The manifest file can not be read. Tried %s', $manifestPath));
             }
 
-            try {
-                $saneJson = $this->stripComments($manifestJson);
-                $manifest = json_decode($saneJson, true, 512, JSON_THROW_ON_ERROR);
-            } catch (\JsonException $e) {
-                throw new ContentPackCorruptedException('The manifest file can not be decoded', previous: $e);
-            }
+            $manifest = $this->decodeManifest($manifestJson);
 
             $uuid = $manifest['header']['uuid'];
             $name = $manifest['header']['name'];
@@ -110,18 +105,12 @@ abstract class ContentPackManagerService
     private function decodeManifest(string $json): array
     {
         try {
-            $saneJson = $this->stripComments($json);
-            $manifest = json_decode($saneJson, true, 512, JSON_THROW_ON_ERROR);
+            $manifest = json5_decode($json, true, 512, JSON_THROW_ON_ERROR);
         } catch (\JsonException $e) {
             throw new ContentPackCorruptedException('The manifest file can not be decoded', previous: $e);
         }
 
         return $manifest;
-    }
-
-    private function stripComments(string $json): string
-    {
-        return preg_replace('#[ \t]*//.*[ \t]*[\r\n]#', '', $json);
     }
 
     /**
